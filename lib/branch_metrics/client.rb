@@ -10,23 +10,6 @@ require 'json'
 
 # Branch Metrics API 
 # ========================================== #
-# API GET / POST / PUT Options
-
-# GET /v1/app/ # Getting a new Branch app config
-# GET /v1/credits
-# GET /v1/credithistory
-
-# POST /v1/app # Posting a new Branch app config
-# POST /v1/url
-# POST /v1/event
-# POST /v1/eventresponse
-# POST /v1/referralcode/
-# POST /v1/applycode/
-# POST /v1/redeem
-
-# PUT /v1/app/ Update Branch app config
-# ========================================== #
-# api_url = "https://api.branch.io"
 
 # ========================================== #  
 # Required Data
@@ -61,51 +44,145 @@ module Branch
 		class Client
     include HTTParty
 
-    BASE_URI = 'https://api.branch.io/'
+    BASE_URI = 'https://api.branch.io/v1'
 
-    def initialize(api_key='', app_id='', options={})
-      @api_key = api_key
+    def initialize(app_id='', user_id=nil, identity=nil, data={})
       @app_id = app_id
-
-      #defaults
-      options[:base_uri] ||= BASE_URI
-      @base_uri = options[:base_uri]
-      options[:format] ||= :json
-      options.each do |k,v|
+      @user_id = user_id
+    
+      # defaults
+      data[:base_uri] ||= BASE_URI
+      @base_uri = data[:base_uri]
+      data[:format] ||= :json
+      data.each do |k,v|
         self.class.send k,v
       end
     end
+# ========================================== #
+# GET Requests #
+# ========================================== #
+# App, Credits, Credit History
+ 			
+      # App - Get the current branch configuration
+      def app data={}
+        get '/app', data
+      end
 
- 			# Apps
-
- 			# Credits
- 			def credits page=1, options={}
- 			 r = get '/credits', {page: page}.merge(options)
-      r.credits ||= []
-      r
-   	end
-
+ 			# Credit Count
+ 			def credits page=1, data={}
+ 			  get '/credits', data
+   	  end
 
  			# Credit History
+      def credit_history data={}
+        get '/credithistory', data
+      end
+
+      # Structure Dynamic Deeplink
+      def dynamic_deeplink data={}
+        data[:base_uri] = "https://bnc.lt/"
+        data[:format] ||= :json
+
+        get '/a/', data
+      end
+
+      # Get Referral Code
+      def referral data={}
+        get '/referralcode', data
+      end
 
 
-				# Wrappers for the main HTTP verbs
+# ========================================== #
+# POST Requests
+# ========================================== #
+# app, url, event, eventresponse, referralcode, applycode, redeem
 
-    def get(path, options={})
-      http_verb :get, path, options
+      # Create App Config
+      def create_app app_name dev_name dev_email
+        data[:app_name] = app_name
+        data[:dev_name] = dev_name
+        data[:dev_email] = dev_email
+      end
+      
+      # Create Deeplink
+      def create_deeplink data={}
+        post '/url', data
+      end
+
+      # Redeem Credits
+      def redeem amount data={}
+        data[:amount] = amount
+        post '/redeem', data
+      end
+
+      # Create Remote Event for Funnels
+      def create_event event data={}
+        data[:event] = event
+        post '/event', data
+      end
+
+      # Create Dynamic Reward
+      def dynamic_reward calculation_type location type event metadata data={}
+        data[:calculation_type] = calculation_type
+        data[:location] = location
+        data[:type] = type
+        data[:event] = event
+        data[:metadata] = metadata 
+
+        post '/eventresponse', data
+      end
+
+      # Create Referral Code
+      def create_referral amount calculation_type location data={}
+        data[:amount] = amount
+        data[:calculation_type] = calculation_type
+        data[:location] = location
+        post '/referralcode', data
+      end
+
+      # Validate Referral Code
+      def validate_referral code data={}
+        :code = code
+        post '/referralcode/:code', data
+      end
+
+      # Apply Referral Code
+      def apply_referral
+        :code = code
+        post '/applycode/:code', data
+      end
+
+# ========================================== #
+# PUT Requests
+# ========================================== #
+      # Update App
+      def update_app data={}
+        put '/app', data
+      end
+
+# ========================================== #
+# Wrappers for the main HTTP verbs
+# ========================================== #
+
+    def get(path, data={})
+      http_verb :get, path, data
     end
 
-    def post(path, options={})
-      http_verb :post, path, options
+    def post(path, data={})
+      http_verb :post, path, data
     end
 
-    def put(path, options={})
-      http_verb :put, path, options
+    def put(path, data={})
+      http_verb :put, path, data
     end
 
-    def delete(path, options={})
-      http_verb :delete, path, options
+    def delete(path, data={})
+      http_verb :delete, path, data
     end
+
+# ========================================== #
+# White Listing Certification #
+# ========================================== #
 
     def self.whitelisted_cert_store
       @@cert_store ||= build_whitelisted_cert_store
@@ -132,28 +209,28 @@ module Branch
       result
     end
 
-    def ssl_options
+    def ssl_data
       { verify: true, cert_store: self.class.whitelisted_cert_store }
     end
 
-    def http_verb(verb, path, options={})
+    def http_verb(verb, path, data={})
 
       if [:get, :delete].include? verb
-        request_options = {}
-        path = "#{path}?#{URI.encode_www_form(options)}" if !options.empty?
+        request_data = {}
+        path = "#{path}?#{URI.encode_www_form(data)}" if !data.empty?
       else
-        request_options = {body: options.to_json}
+        request_data = {body: data.to_json}
       end
 
       headers = {
-        'api_keyY' => @api_key,
+        'Content-Type' => "application/json",
         'app_id' => @app_id,
-        "Content-Type" => "application/json",
+        'user_id' => @user_id,  
       }
 
-      request_options[:headers] = headers
+      request_data[:headers] = headers
 
-      r = self.class.send(verb, path, request_options.merge(ssl_options))
+      r = self.class.send(verb, path, request_data.merge(ssl_data))
       hash = Hashie::Mash.new(JSON.parse(r.body))
       raise Error.new(hash.error) if hash.error
       raise Error.new(hash.errors.join(", ")) if hash.errors
