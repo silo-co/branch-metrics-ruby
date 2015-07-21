@@ -46,8 +46,8 @@ module Branch
 
     BASE_URI = 'https://api.branch.io/v1'
 
-    def initialize(app_id='', user_id=nil, identity=nil, data={})
-      @app_id = app_id
+    def initialize(branch_key='', user_id=nil, identity=nil, data={})
+      @branch_key = branch_key
       @user_id = user_id
     
       # defaults
@@ -214,7 +214,7 @@ module Branch
 
       headers = {
         'Content-Type' => "application/json",
-        'app_id' => @app_id,
+        'app_id' => @branch_key,
         'user_id' => @user_id,  
       }
 
