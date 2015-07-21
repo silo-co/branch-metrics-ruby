@@ -146,11 +146,7 @@ module Branch
         post '/referralcode/:code', data
       end
 
-      # Apply Referral Code
-      def apply_referral
-        :code = code
-        post '/applycode/:code', data
-      end
+     
 
 # ========================================== #
 # PUT Requests
