@@ -98,7 +98,7 @@ module Branch
 # app, url, event, eventresponse, referralcode, applycode, redeem
 
       # Create App Config
-      def create_app app_name dev_name dev_email
+      def create_app app_name, dev_name, dev_email
         data[:app_name] = app_name
         data[:dev_name] = dev_name
         data[:dev_email] = dev_email
@@ -110,19 +110,19 @@ module Branch
       end
 
       # Redeem Credits
-      def redeem amount data={}
+      def redeem amount, data={}
         data[:amount] = amount
         post '/redeem', data
       end
 
       # Create Remote Event for Funnels
-      def create_event event data={}
+      def create_event event, data={}
         data[:event] = event
         post '/event', data
       end
 
       # Create Dynamic Reward
-      def dynamic_reward calculation_type location type event metadata data={}
+      def dynamic_reward calculation_type, location, type, event, metadata, data={}
         data[:calculation_type] = calculation_type
         data[:location] = location
         data[:type] = type
@@ -133,7 +133,7 @@ module Branch
       end
 
       # Create Referral Code
-      def create_referral amount calculation_type location data={}
+      def create_referral amount, calculation_type, location, data={}
         data[:amount] = amount
         data[:calculation_type] = calculation_type
         data[:location] = location
@@ -141,7 +141,7 @@ module Branch
       end
 
       # Validate Referral Code
-      def validate_referral code data={}
+      def validate_referral code, data={}
         :code = code
         post '/referralcode/:code', data
       end
