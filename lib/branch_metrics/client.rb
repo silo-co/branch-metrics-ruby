@@ -140,13 +140,7 @@ module Branch
         post '/referralcode', data
       end
 
-      # Validate Referral Code
-      def validate_referral code, data={}
-        :code = code
-        post '/referralcode/:code', data
-      end
-
-     
+      
 
 # ========================================== #
 # PUT Requests
