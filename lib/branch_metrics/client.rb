@@ -204,7 +204,10 @@ module Branch
     end
 
     def http_verb(verb, path, data={})
-
+      data.merge {
+        'branch_key' => @branch_key,
+        'user_id' => @user_id || '',  
+      }
       if [:get, :delete].include? verb
         request_data = {}
         path = "#{path}?#{URI.encode_www_form(data)}" if !data.empty?
@@ -214,8 +217,6 @@ module Branch
 
       headers = {
         'Content-Type' => "application/json",
-        'branch_key' => @branch_key,
-        'user_id' => @user_id || '',  
       }
 
       request_data[:headers] = headers
