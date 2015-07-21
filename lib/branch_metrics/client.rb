@@ -214,8 +214,8 @@ module Branch
 
       headers = {
         'Content-Type' => "application/json",
-        'app_id' => @branch_key,
-        'user_id' => @user_id,  
+        'branch_key' => @branch_key,
+        'user_id' => @user_id || '',  
       }
 
       request_data[:headers] = headers
