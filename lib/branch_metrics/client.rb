@@ -220,7 +220,7 @@ module Branch
 
       request_data[:headers] = headers
 
-      r = self.class.send(verb, path, request_data.merge(ssl_data))
+      r = self.class.send(verb, path, request_data) # .merge(ssl_data))
       hash = Hashie::Mash.new(JSON.parse(r.body))
       raise Error.new(hash.error) if hash.error
       raise Error.new(hash.errors.join(", ")) if hash.errors
